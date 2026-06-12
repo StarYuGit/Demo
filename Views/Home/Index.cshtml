@@ -1,0 +1,85 @@
+﻿@model IEnumerable<Demo.Models.LeaveRequest>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">填寫請假單</div>
+                <div class="card-body">
+                    <form asp-action="SubmitLeave" method="post">
+                        <div class="mb-3">
+                            <label>員工姓名</label>
+                            <input type="text" name="EmployeeName" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label>假別</label>
+                            <select name="LeaveType" class="form-select">
+                                <option>特休</option>
+                                <option>病假</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label>事由</label>
+                            <textarea name="Reason" class="form-control" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            送出申請
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <span class="mb-0">我的申請紀錄</span>
+                    <a asp-action="Index" class="btn btn-sm btn-light">
+                        🔄 查詢最新狀態
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <p class="text-muted">目前尚無申請單。</p>
+                    }
+                    else
+                    {
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>單號</th>
+                                    <th>姓名</th>
+                                    <th>假別</th>
+                                    <th>事由</th>
+                                    <th>狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.Id</td>
+                                        <td>@item.EmployeeName</td>
+                                        <td>@item.LeaveType</td>
+                                        <td>@item.Reason</td>
+                                        <td>
+                                            @if (item.Status == "未審核")
+                                            {
+                                                <span class="badge bg-warning text-dark">@item.Status</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">@item.Status</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
