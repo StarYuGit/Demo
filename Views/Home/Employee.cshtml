@@ -1,0 +1,53 @@
+﻿
+@model Demo.Models.Employee
+
+@{
+    ViewData["Title"] = "公文系統資料維護";
+}
+
+<div class="container mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+    <form method="get" asp-action="Employee" class="mb-4">
+        <div class="row align-items-end">
+            <div class="col-md-4">
+                <label for="searchName" class="form-label">請輸入員工姓名 (例如: 王大明)：</label>
+                <input type="text" id="searchName" name="searchName" value="@ViewBag.SearchName" class="form-control" placeholder="輸入姓名..." />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">查詢</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model != null)
+    {
+        <div class="card shadow-sm" style="max-width: 500px;">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">員工詳細資料</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text"><strong>姓名：</strong> @Model.Name</p>
+                <p class="card-text"><strong>目前等級：</strong> <span class="badge bg-secondary fs-6">@Model.Grade</span></p>
+
+                <hr />
+
+                <form method="post" asp-action="UpdateGrade">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="mb-3">
+                        <label for="newGrade" class="form-label">設定新等級：</label>
+                        <input type="text" id="newGrade" name="newGrade" class="form-control" placeholder="例如: 等級四" required />
+                    </div>
+                    <button type="submit" class="btn btn-success">儲存新等級</button>
+                </form>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ViewBag.SearchName))
+    {
+        <div class="alert alert-warning" role="alert">
+            @ViewBag.Message
+        </div>
+    }
+</div>
