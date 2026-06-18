@@ -1,5 +1,4 @@
-﻿
-@model Demo.Models.Employee
+﻿@model Demo.Models.EmployeeIndexViewModel
 
 @{
     ViewData["Title"] = "公文系統資料維護";
@@ -9,11 +8,12 @@
     <h2>@ViewData["Title"]</h2>
     <hr />
 
+    <!-- 1. 查詢表單 -->
     <form method="get" asp-action="Employee" class="mb-4">
         <div class="row align-items-end">
             <div class="col-md-4">
-                <label for="searchName" class="form-label">請輸入員工姓名 (例如: 王大明)：</label>
-                <input type="text" id="searchName" name="searchName" value="@ViewBag.SearchName" class="form-control" placeholder="輸入姓名..." />
+                <label for="searchName" class="form-label">請輸入員工姓名：</label>
+                <input type="text" id="searchName" name="searchName" value="@Model.SearchName" class="form-control" placeholder="例如: 王大明" />
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">查詢</button>
@@ -21,33 +21,68 @@
         </div>
     </form>
 
-    @if (Model != null)
-    {
-        <div class="card shadow-sm" style="max-width: 500px;">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">員工詳細資料</h5>
-            </div>
-            <div class="card-body">
-                <p class="card-text"><strong>姓名：</strong> @Model.Name</p>
-                <p class="card-text"><strong>目前等級：</strong> <span class="badge bg-secondary fs-6">@Model.Grade</span></p>
+    <div class="row">
+        <!-- 左側：顯示查詢結果列表 (以等級區分) -->
+        <div class="col-md-5 mb-4">
+            @if (Model.SearchResults != null && Model.SearchResults.Any())
+            {
+                <h5>查詢結果清單</h5>
+                <div class="list-group shadow-sm">
+                    @foreach (var emp in Model.SearchResults)
+                    {
+                        var activeClass = (Model.SelectedEmployee != null && Model.SelectedEmployee.Id == emp.Id) ? "active" : "";
+                        var badgeClass = (activeClass == "active") ? "bg-light text-dark" : "bg-secondary";
 
-                <hr />
+                        <a asp-action="Employee"
+                           asp-route-searchName="@Model.SearchName"
+                           asp-route-selectedId="@emp.Id"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center @activeClass">
+                            <strong>@emp.Name</strong>
+                            <!-- 右側顯示等級標籤，作為區分依據 -->
+                            <span class="badge rounded-pill @badgeClass">@emp.Grade</span>
+                        </a>
+                    }
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="alert alert-warning" role="alert">
+                    @Model.Message
+                </div>
+            }
+        </div>
 
-                <form method="post" asp-action="UpdateGrade">
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <div class="mb-3">
-                        <label for="newGrade" class="form-label">設定新等級：</label>
-                        <input type="text" id="newGrade" name="newGrade" class="form-control" placeholder="例如: 等級四" required />
+        <!-- 右側：顯示選中員工的詳細資料卡片 -->
+        <div class="col-md-7">
+            @if (Model.SelectedEmployee != null)
+            {
+                <div class="card shadow border-info">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">員工詳細資料</h5>
                     </div>
-                    <button type="submit" class="btn btn-success">儲存新等級</button>
-                </form>
-            </div>
+                    <div class="card-body">
+                        <p class="card-text fs-5"><strong>姓名：</strong> @Model.SelectedEmployee.Name</p>
+                        <p class="card-text fs-5">
+                            <strong>目前職級：</strong>
+                            <span class="badge bg-secondary">@Model.SelectedEmployee.Grade</span>
+                        </p>
+
+                        <hr />
+
+                        <!-- 儲存新職級的表單 -->
+                        <form method="post" asp-action="UpdateGrade">
+                            <input type="hidden" name="id" value="@Model.SelectedEmployee.Id" />
+                            <input type="hidden" name="searchName" value="@Model.SearchName" />
+
+                            <div class="input-group mb-2 mt-3">
+                                <span class="input-group-text">設定新職級</span>
+                                <input type="text" name="newGrade" class="form-control" placeholder="" required />
+                                <button type="submit" class="btn btn-success">儲存變更</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
         </div>
-    }
-    else if (!string.IsNullOrEmpty(ViewBag.SearchName))
-    {
-        <div class="alert alert-warning" role="alert">
-            @ViewBag.Message
-        </div>
-    }
+    </div>
 </div>

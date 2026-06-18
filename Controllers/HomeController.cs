@@ -84,45 +84,48 @@ namespace Demo.Controllers
             return Ok(new { message = "狀態更新成功", currentStatus = targetLeave.Status });
         }
 
-        public IActionResult Employee(string searchName)
+        public IActionResult Employee(string searchName, int? selectedId)
         {
-            Employee? result = null;
-
-            // 將查詢字串存入 ViewBag 讓畫面保留輸入值
-            ViewBag.SearchName = searchName;
+            var viewModel = new EmployeeIndexViewModel
+            {
+                SearchName = searchName
+            };
 
             if (!string.IsNullOrEmpty(searchName))
             {
-                // 從記憶體中搜尋姓名相符的員工
-                result = MockDatabase.Employees.FirstOrDefault(e => e.Name == searchName);
+                // 找出所有同名的員工
+                viewModel.SearchResults = MockDatabase.Employees
+                    .Where(e => e.Name == searchName)
+                    .ToList();
 
-                if (result == null)
+                if (!viewModel.SearchResults.Any())
                 {
-                    ViewBag.Message = "找不到此員工，請確認姓名是否正確。";
+                    viewModel.Message = "找不到此員工，請確認姓名是否正確。";
                 }
             }
 
-            // 將找到的員工模型傳遞給 View
-            return View(result);
-        
+            // 若有選取特定項目，展開該員工卡片
+            if (selectedId.HasValue)
+            {
+                viewModel.SelectedEmployee = MockDatabase.Employees.FirstOrDefault(e => e.Id == selectedId.Value);
+            }
+
+            return View(viewModel);
+
         }
         // 處理更新等級
         [HttpPost]
-        public IActionResult UpdateGrade(int id, string newGrade)
+        public IActionResult UpdateGrade(int id, string newGrade, string searchName)
         {
-            // 找出對應的員工
             var employee = MockDatabase.Employees.FirstOrDefault(e => e.Id == id);
 
             if (employee != null && !string.IsNullOrEmpty(newGrade))
             {
-                // 更新記憶體中的等級
                 employee.Grade = newGrade;
-
-                // 更新成功後，重新導向到首頁並帶上原員工姓名，直接顯示更新後的結果
-                return RedirectToAction("Employee", new { searchName = employee.Name });
             }
 
-            return RedirectToAction("Employee");
+            // 更新成功後，重新導向並保留搜尋狀態與選取的項目
+            return RedirectToAction("Employee", new { searchName = searchName, selectedId = id });
         }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
