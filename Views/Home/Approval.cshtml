@@ -1,0 +1,92 @@
+﻿@model IEnumerable<Demo.Models.LeaveRequest>
+
+@{
+    ViewData["Title"] = "請假簽核管理中心";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>@ViewData["Title"]</h2>
+        <span class="badge bg-primary fs-6">待處理單據：@Model.Count() 筆</span>
+    </div>
+    <hr />
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">員工請假審查清單</h5>
+            <a asp-controller="Home" asp-action="Approval" class="btn btn-sm btn-outline-light">🔄 重新整理</a>
+        </div>
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted fs-5 mb-0">🎉 太棒了！目前沒有任何待審核的請假單。</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 10%">單號</th>
+                                <th style="width: 15%">申請人</th>
+                                <th style="width: 15%">假別</th>
+                                <th style="width: 35%">請假事由</th>
+                                <th style="width: 25%" class="text-center">簽核決策</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><strong class="text-secondary">#@item.Id</strong></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2 bg-light rounded-circle p-2 text-center" style="width: 35px; height: 35px; line-height: 18px;">
+                                                👤
+                                            </div>
+                                            <span>@item.EmployeeName</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (item.LeaveType == "特休")
+                                        {
+                                            <span class="badge bg-info text-dark">🌴 @item.LeaveType</span>
+                                        }
+                                        else if (item.LeaveType == "病假")
+                                        {
+                                            <span class="badge bg-danger text-white">🤒 @item.LeaveType</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@item.LeaveType</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 400px;" title="@item.Reason">
+                                            @item.Reason
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <form asp-controller="Home" asp-action="ProcessApproval" method="post" class="d-inline-flex gap-2">
+                                            <input type="hidden" name="id" value="@item.Id" />
+
+                                            <button type="submit" name="action" value="Approve" class="btn btn-sm btn-success px-3 shadow-sm">
+                                                🟢 核准
+                                            </button>
+
+                                            <button type="submit" name="action" value="Reject" class="btn btn-sm btn-outline-danger px-3 shadow-sm">
+                                                🔴 駁回
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
