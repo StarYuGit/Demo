@@ -91,19 +91,18 @@ namespace Demo.Controllers
         // 1. 顯示簽核管理頁面 (GET: /Home/Approval)
         public IActionResult Approval()
         {
-            // 💡 改用 _mockDatabase：撈出狀態為「未審核」的請假單
+            // 撈出狀態為「未審核」的請假單
             var pendingRequests = _mockDatabase
                                     .Where(r => r.Status == "未審核")
+                                    .OrderBy(r => r.StartDate) // 依照請假開始時間排序 (貼心小功能)
                                     .ToList();
 
             return View(pendingRequests);
         }
-
-        // 2. 處理核准或駁回動作 (POST: /Home/ProcessApproval)
+        // 處理審核動作
         [HttpPost]
-        public IActionResult ProcessApproval(int id, string action)
+        public IActionResult ProcessApproval(int id, string action, string managerComment)
         {
-            // 💡 改用 _mockDatabase：尋找指定的請假單
             var leaveRequest = _mockDatabase.FirstOrDefault(r => r.Id == id);
 
             if (leaveRequest == null)
@@ -111,7 +110,7 @@ namespace Demo.Controllers
                 return NotFound("找不到此張假單");
             }
 
-            // 根據主管點擊的按鈕更新狀態
+            // 更新狀態
             if (action == "Approve")
             {
                 leaveRequest.Status = "已核准";
@@ -121,12 +120,26 @@ namespace Demo.Controllers
                 leaveRequest.Status = "已退回";
             }
 
-            // (因為是參考型別 (Reference Type)，直接修改 List 裡的物件屬性就等於存檔了)
+            // 儲存主管寫的審核理由 (對應你 Model 的小寫開頭 managerComment)
+            leaveRequest.managerComment = managerComment;
 
-            // 簽核完畢後，重新導回 Approval 頁面整理清單
+            // 簽核完畢後，重新導回 Approval 清單頁面
             return RedirectToAction("Approval");
         }
+        // 審核頁面
+        [HttpGet]
+        public IActionResult ReviewLeave(int id)
+        {
+            // 找出網址傳進來的特定假單
+            var leaveRequest = _mockDatabase.FirstOrDefault(r => r.Id == id);
 
+            if (leaveRequest == null)
+            {
+                return NotFound("找不到此張假單，可能已經被刪除或編號錯誤！");
+            }
+
+            return View(leaveRequest);
+        }
         public IActionResult Employee(string searchName, int? selectedId)
         {
             var viewModel = new EmployeeIndexViewModel

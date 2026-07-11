@@ -9,81 +9,135 @@
     <hr />
 
     <div class="row">
+        <!-- 左側：填寫請假單 -->
         <div class="col-md-4">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white">填寫請假單</div>
                 <div class="card-body">
                     <form asp-action="SubmitLeave" method="post">
                         <div class="mb-3">
-                            <label>員工姓名</label>
+                            <label class="form-label fw-bold">員工姓名</label>
                             <input type="text" name="EmployeeName" class="form-control" required />
                         </div>
                         <div class="mb-3">
-                            <label>假別</label>
+                            <label class="form-label fw-bold">假別</label>
                             <select name="LeaveType" class="form-select">
-                                <option>特休</option>
-                                <option>病假</option>
+                                <option value="特休">特休</option>
+                                <option value="病假">病假</option>
+                                <option value="事假">事假</option>
                             </select>
                         </div>
+
+                        <!-- 👉 修改：改成單純的日期挑選器 (date) -->
                         <div class="mb-3">
-                            <label>事由</label>
-                            <textarea name="Reason" class="form-control" required></textarea>
+                            <label class="form-label fw-bold">開始日期</label>
+                            <input type="date" name="StartDate" class="form-control" required />
                         </div>
-                        <button type="submit" class="btn btn-success w-100">
-                            送出申請
+
+                        <!-- 👉 修改：改成單純的日期挑選器 (date) -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">結束日期</label>
+                            <input type="date" name="EndDate" class="form-control" required />
+                        </div>
+
+                        <!-- 已經將「總時數」欄位移除 -->
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">事由</label>
+                            <textarea name="Reason" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 shadow-sm">
+                            📤 送出申請
                         </button>
                     </form>
                 </div>
             </div>
         </div>
 
+        <!-- 右側：申請紀錄查詢 -->
         <div class="col-md-8">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                     <span class="mb-0">我的申請紀錄</span>
-                    <a asp-action="Leave" class="btn btn-sm btn-light">
+                    <a asp-action="Leave" class="btn btn-sm btn-light shadow-sm">
                         🔄 查詢最新狀態
                     </a>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     @if (!Model.Any())
                     {
-                        <p class="text-muted">目前尚無申請單。</p>
+                        <div class="text-center py-5">
+                            <p class="text-muted fs-5 mb-0">目前尚無申請單。</p>
+                        </div>
                     }
                     else
                     {
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>單號</th>
-                                    <th>姓名</th>
-                                    <th>假別</th>
-                                    <th>事由</th>
-                                    <th>狀態</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model)
-                                {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <td>@item.Id</td>
-                                        <td>@item.EmployeeName</td>
-                                        <td>@item.LeaveType</td>
-                                        <td>@item.Reason</td>
-                                        <td>
-                                            @if (item.Status == "未審核")
-                                            {
-                                                <span class="badge bg-warning text-dark">@item.Status</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-success">@item.Status</span>
-                                            }
-                                        </td>
+                                        <th style="width: 8%">單號</th>
+                                        <th style="width: 12%">姓名</th>
+                                        <th style="width: 10%">假別</th>
+                                        <th style="width: 25%">請假期間</th>
+                                        <th style="width: 15%">狀態</th>
+                                        <th style="width: 30%">主管回覆</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td><strong class="text-secondary">#@item.Id</strong></td>
+                                            <td>@item.EmployeeName</td>
+                                            <td>
+                                                @if (item.LeaveType == "特休")
+                                                {
+                                                    <span class="badge bg-info text-dark">🌴 @item.LeaveType</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger text-white">🤒 @item.LeaveType</span>
+                                                }
+                                            </td>
+                                            <!-- 👉 修改：只顯示日期，移除時數 -->
+                                            <td>
+                                                <div class="small">
+                                                    <div><span class="text-muted">起：</span>@item.StartDate.ToString("yyyy/MM/dd")</div>
+                                                    <div><span class="text-muted">迄：</span>@item.EndDate.ToString("yyyy/MM/dd")</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (item.Status == "未審核")
+                                                {
+                                                    <span class="badge bg-warning text-dark">⏳ @item.Status</span>
+                                                }
+                                                else if (item.Status == "已核准")
+                                                {
+                                                    <span class="badge bg-success">🟢 @item.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">🔴 @item.Status</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.managerComment))
+                                                {
+                                                    <div class="text-break small text-muted">
+                                                        💬 @item.managerComment
+                                                    </div>
+                                                }
+                                                else if (item.Status != "未審核")
+                                                {
+                                                    <span class="small text-muted fst-italic">無備註</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     }
                 </div>
             </div>

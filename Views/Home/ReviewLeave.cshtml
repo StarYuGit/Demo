@@ -1,0 +1,76 @@
+﻿@model Demo.Models.LeaveRequest
+
+@{
+    ViewData["Title"] = "單筆假單審核";
+}
+
+<div class="container mt-4">
+    <h2>@ViewData["Title"] - 單號 #@Model.Id</h2>
+    <hr />
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">員工請假詳細資訊</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered align-middle">
+                        <tr>
+                            <th class="bg-light" style="width: 25%;">申請人</th>
+                            <td><span class="fs-5 fw-bold">@Model.EmployeeName</span></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">假別</th>
+                            <td>
+                                @if (Model.LeaveType == "特休")
+                                {
+                                    <span class="badge bg-info text-dark fs-6">🌴 @Model.LeaveType</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger text-white fs-6">🤒 @Model.LeaveType</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">請假區間</th>
+                            <td>
+                                <div>@Model.StartDate.ToString("yyyy年MM月dd日 HH:mm")</div>
+                                <div><span class="text-muted">至</span> @Model.EndDate.ToString("yyyy年MM月dd日 HH:mm")</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">請假事由</th>
+                            <td>@Model.Reason</td>
+                        </tr>
+                    </table>
+
+                    <hr />
+
+                    <form asp-controller="Home" asp-action="ProcessApproval" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-primary">📝 主管審核意見 (Manager Comment)</label>
+                            <textarea name="managerComment" class="form-control" rows="3" placeholder="請輸入核准或退回的理由..."></textarea>
+                            <div class="form-text text-muted">若選擇「駁回」，強烈建議填寫退回理由讓員工了解原因。</div>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-end">
+                            <a asp-action="Approval" class="btn btn-secondary">取消並返回清單</a>
+
+                            <button type="submit" name="action" value="Reject" class="btn btn-outline-danger px-4">
+                                🔴 駁回此假單
+                            </button>
+
+                            <button type="submit" name="action" value="Approve" class="btn btn-success px-4 shadow-sm">
+                                🟢 同意核准
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

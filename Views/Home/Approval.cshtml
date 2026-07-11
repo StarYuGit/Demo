@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "請假簽核管理中心";
 }
-
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center">
         <h2>@ViewData["Title"]</h2>
@@ -29,11 +28,12 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 10%">單號</th>
-                                <th style="width: 15%">申請人</th>
-                                <th style="width: 15%">假別</th>
-                                <th style="width: 35%">請假事由</th>
-                                <th style="width: 25%" class="text-center">簽核決策</th>
+                                <th style="width: 8%">單號</th>
+                                <th style="width: 12%">申請人</th>
+                                <th style="width: 10%">假別</th>
+                                <th style="width: 30%">請假時間 (共計)</th>
+                                <th style="width: 25%">請假事由</th>
+                                <th style="width: 15%" class="text-center">操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -43,9 +43,7 @@
                                     <td><strong class="text-secondary">#@item.Id</strong></td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="avatar-sm me-2 bg-light rounded-circle p-2 text-center" style="width: 35px; height: 35px; line-height: 18px;">
-                                                👤
-                                            </div>
+                                            <div class="avatar-sm me-2 bg-light rounded-circle p-2 text-center" style="width: 35px; height: 35px; line-height: 18px;">👤</div>
                                             <span>@item.EmployeeName</span>
                                         </div>
                                     </td>
@@ -54,32 +52,26 @@
                                         {
                                             <span class="badge bg-info text-dark">🌴 @item.LeaveType</span>
                                         }
-                                        else if (item.LeaveType == "病假")
+                                        else
                                         {
                                             <span class="badge bg-danger text-white">🤒 @item.LeaveType</span>
                                         }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">@item.LeaveType</span>
-                                        }
                                     </td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 400px;" title="@item.Reason">
+                                        <div class="small">
+                                            <div><strong>起：</strong>@item.StartDate.ToString("yyyy/MM/dd HH:mm")</div>
+                                            <div><strong>迄：</strong>@item.EndDate.ToString("yyyy/MM/dd HH:mm")</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 250px;" title="@item.Reason">
                                             @item.Reason
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        <form asp-controller="Home" asp-action="ProcessApproval" method="post" class="d-inline-flex gap-2">
-                                            <input type="hidden" name="id" value="@item.Id" />
-
-                                            <button type="submit" name="action" value="Approve" class="btn btn-sm btn-success px-3 shadow-sm">
-                                                🟢 核准
-                                            </button>
-
-                                            <button type="submit" name="action" value="Reject" class="btn btn-sm btn-outline-danger px-3 shadow-sm">
-                                                🔴 駁回
-                                            </button>
-                                        </form>
+                                        <a asp-controller="Home" asp-action="ReviewLeave" asp-route-id="@item.Id" class="btn btn-sm btn-primary px-3 shadow-sm">
+                                            🔍 進入審核
+                                        </a>
                                     </td>
                                 </tr>
                             }
